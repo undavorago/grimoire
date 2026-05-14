@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Лекция 01 — Демонология — Гримуар</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/*
+  ╔══════════════════════════════════════╗
+  ║  ЦВЕТА ПРЕДМЕТА — меняй только здесь ║
+  ╚══════════════════════════════════════╝
+  --c1  главный (заголовки h2, акценты)
+  --c2  приглушённый (подписи, счётчики)
+  --c3  фон блоков (rgba с прозрачностью)
+  --c4  рамки и разделители (rgba)
+*/
+:root {
+  --bg: #1d182e;
+  --c1: #c084fc;
+  --c2: rgba(192,132,252,0.55);
+  --c3: rgba(192,132,252,0.07);
+  --c4: rgba(192,132,252,0.22);
+  --text: #e8e2f5;
+  --muted: rgba(157,146,184,0.65);
+  --faint: rgba(157,146,184,0.28);
+  --surface: rgba(255,255,255,0.025);
+  --border: rgba(255,255,255,0.055);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+/* ── Шапка ── */
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 3rem;
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: rgba(29,24,46,0.92);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; color: var(--c1); text-decoration: none; }
+
+.breadcrumb { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.breadcrumb a { color: var(--muted); text-decoration: none; transition: color 0.15s; }
+.breadcrumb a:hover { color: var(--text); }
+
+.nav-arrows { display: flex; gap: 12px; }
+.nav-arrow {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  transition: all 0.2s;
+  letter-spacing: 0.05em;
+}
+.nav-arrow:hover { color: var(--c1); border-color: var(--c4); background: var(--c3); }
+
+/* ── Лейаут: sidebar + контент ── */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ── Боковое оглавление ── */
+.toc {
+  padding: 2.5rem 1.5rem 2rem;
+  position: sticky;
+  top: 65px;
+  height: calc(100vh - 65px);
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+}
+
+.toc-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-bottom: 1rem;
+}
+
+.toc-item {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-bottom: 2px;
+  transition: all 0.15s;
+  border-left: 2px solid transparent;
+}
+.toc-item:hover { color: var(--text); background: var(--c3); border-left-color: var(--c1); }
+.toc-item.active { color: var(--c1); background: var(--c3); border-left-color: var(--c1); }
+
+.toc-sub { padding-left: 10px; margin-top: 2px; margin-bottom: 4px; }
+.toc-sub .toc-item { font-size: 11px; border-left: none; padding-left: 8px; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 3px; }
+
+/* ── Основной контент ── */
+.content {
+  padding: 3rem 4rem 5rem;
+  max-width: 780px;
+}
+
+/* ── Заголовок лекции ── */
+.lecture-header {
+  margin-bottom: 3rem;
+  padding-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.lecture-num-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--c2);
+  margin-bottom: 0.8rem;
+}
+
+.lecture-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 44px;
+  font-weight: 300;
+  color: var(--text);
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+}
+
+.lecture-subtitle {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--muted);
+  margin-bottom: 1.5rem;
+}
+
+.tags { display: flex; gap: 7px; flex-wrap: wrap; }
+.tag {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: var(--c3);
+  color: var(--c1);
+  border: 1px solid var(--c4);
+}
+
+/* ── Типографика ── */
+h2 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--c1);
+  margin: 3rem 0 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+h2::before {
+  content: '';
+  display: block;
+  width: 3px;
+  height: 24px;
+  background: var(--c1);
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 2rem 0 0.8rem;
+}
+
+p { margin-bottom: 1rem; line-height: 1.85; }
+strong { font-weight: 500; color: var(--c1); }
+
+/* ── Блок: Определение ── */
+.block-def {
+  background: var(--c3);
+  border: 1px solid var(--c4);
+  border-left: 3px solid var(--c1);
+  border-radius: 0 10px 10px 0;
+  padding: 1.2rem 1.5rem;
+  margin: 1.5rem 0;
+}
+.block-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c1);
+  margin-bottom: 0.5rem;
+}
+.block-def p { margin: 0; font-size: 15px; }
+
+/* ── Блок: Цитата/источник ── */
+.block-quote {
+  border-left: 2px solid var(--c4);
+  padding: 0.5rem 0 0.5rem 1.5rem;
+  margin: 1.5rem 0;
+}
+.block-quote p { margin: 0; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px; color: var(--muted); }
+.block-quote .source { font-size: 12px; font-style: normal; color: var(--faint); margin-top: 0.4rem; }
+
+/* ── Блок: Примечание ── */
+.block-note {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.1rem 1.4rem;
+  margin: 1.5rem 0;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.note-icon { font-size: 16px; flex-shrink: 0; margin-top: 3px; }
+.block-note p { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* ── Таблица ── */
+.table-wrap { margin: 1.5rem 0; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead th {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--c1);
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--c4);
+  text-align: left;
+  background: var(--c3);
+}
+tbody td { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: top; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: rgba(255,255,255,0.015); }
+
+/* ══════════════════════════════
+   СЕКЦИИ ДОМАШНИХ РАБОТ
+══════════════════════════════ */
+
+/* Разделитель-заголовок секции */
+.hw-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 3rem 0 1.5rem;
+}
+.hw-header-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.hw-header-text {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.hw-header-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c1);
+  flex-shrink: 0;
+}
+
+/* Карточка задания */
+.task {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.3rem 1.5rem;
+  margin-bottom: 10px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: border-color 0.2s, background 0.2s;
+}
+.task:hover { border-color: var(--c4); background: var(--c3); }
+
+.task-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--c2);
+  min-width: 30px;
+  line-height: 1.2;
+}
+.task-body { flex: 1; }
+.task-body p { margin: 0; font-size: 15px; line-height: 1.7; }
+.task-badge {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: var(--c3);
+  color: var(--c2);
+  border: 1px solid var(--c4);
+  white-space: nowrap;
+  align-self: center;
+  flex-shrink: 0;
+}
+
+/* ── Навигация лекций внизу ── */
+.lecture-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+  gap: 1rem;
+}
+.lnav-btn {
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 200px;
+}
+.lnav-btn:hover { color: var(--c1); border-color: var(--c4); background: var(--c3); }
+.lnav-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+.lnav-title { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--text); }
+.lnav-btn:hover .lnav-title { color: var(--c1); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html" class="logo">Гримуар</a>
+  <div class="breadcrumb">
+    <a href="subjects.html">Предметы</a>
+    <span>›</span>
+    <a href="subject.html">Демонология</a>
+    <span>›</span>
+    <span>Лекция 01</span>
+  </div>
+  <div class="nav-arrows">
+    <a href="#" class="nav-arrow">← пред.</a>
+    <a href="#" class="nav-arrow">след. →</a>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- Боковое оглавление -->
+  <aside class="toc">
+    <div class="toc-label">На этой странице</div>
+
+    <a href="#intro" class="toc-item active">Введение</a>
+    <a href="#hist" class="toc-item">История дисциплины</a>
+    <a href="#sources" class="toc-item">Ключевые источники</a>
+    <a href="#classification" class="toc-item">Классификация по эпохам</a>
+
+    <div style="height:16px"></div>
+    <div class="toc-label">Домашние работы</div>
+    <a href="#hw-main" class="toc-item">📌 Основные</a>
+    <a href="#hw-extra" class="toc-item">✦ Дополнительные</a>
+    <a href="#hw-essay" class="toc-item">📖 Эссе</a>
+  </aside>
+
+  <!-- Контент -->
+  <main class="content">
+
+    <div class="lecture-header">
+      <div class="lecture-num-label">Лекция 01 · Демонология</div>
+      <h1 class="lecture-title">Введение в демонологию.<br>Исторический обзор</h1>
+      <p class="lecture-subtitle">происхождение дисциплины, ключевые источники, классификация по эпохам</p>
+      <div class="tags">
+        <span class="tag">Вводная</span>
+        <span class="tag">История</span>
+        <span class="tag">3 задания</span>
+      </div>
+    </div>
+
+    <!-- Теория -->
+    <section id="intro">
+      <h2>Введение</h2>
+      <p>Демонология — одна из древнейших дисциплин в системе тёмных искусств. Её предметом служит изучение природы, поведения и иерархии демонических сущностей, а также методов взаимодействия с ними.</p>
+
+      <div class="block-def">
+        <div class="block-label">Определение</div>
+        <p>Демонология — систематическое исследование демонических существ, их классификации, способностей и взаимоотношений с миром живых. Отличается от народных суеверий строгим методологическим подходом.</p>
+      </div>
+
+      <p>Важно разграничивать академическую демонологию и практическую. Первая занимается описанием и анализом, вторая — непосредственным взаимодействием, что требует особой подготовки и разрешений.</p>
+    </section>
+
+    <section id="hist">
+      <h2>История дисциплины</h2>
+      <p>Демонология в её современном понимании оформилась в XII–XIV веках, однако её корни уходят в шумерские и египетские традиции.</p>
+
+      <div class="block-quote">
+        <p>«Там, где есть страх, есть и демон. Задача учёного — назвать страх по имени.»</p>
+        <div class="source">— Агриппа фон Неттесгейм, «Оккультная философия», 1531</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Период</th>
+              <th>Традиция</th>
+              <th>Ключевой вклад</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>3000–1000 до н.э.</td>
+              <td>Шумер, Аккад</td>
+              <td>Первые систематические списки демонов</td>
+            </tr>
+            <tr>
+              <td>500–100 до н.э.</td>
+              <td>Иудея</td>
+              <td>Ангелология и демонология Книги Еноха</td>
+            </tr>
+            <tr>
+              <td>XII–XIV вв.</td>
+              <td>Европа</td>
+              <td>Формализация гримуаров, Малый Ключ Соломона</td>
+            </tr>
+            <tr>
+              <td>XVI–XVII вв.</td>
+              <td>Ренессанс</td>
+              <td>Синтез традиций, академизация дисциплины</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="sources">
+      <h2>Ключевые источники</h2>
+      <p>Изучение демонологии опирается на несколько групп источников, каждая со своими особенностями работы.</p>
+
+      <div class="block-note">
+        <span class="note-icon">⚠</span>
+        <p>Первичные источники — гримуары — требуют критического подхода. Многие содержат намеренные ошибки для защиты от непосвящённых. Использовать только в сверенных изданиях из библиотеки кафедры.</p>
+      </div>
+    </section>
+
+    <!-- ══ ДОМАШНИЕ РАБОТЫ ══ -->
+
+    <div id="hw-main" class="hw-header">
+      <div class="hw-header-dot"></div>
+      <div class="hw-header-text">Основные задания</div>
+      <div class="hw-header-line"></div>
+    </div>
+
+    <div class="task">
+      <div class="task-num">1</div>
+      <div class="task-body">
+        <p>Составь хронологическую таблицу развития демонологии — не менее 6 ключевых периодов с указанием цивилизации, источника и вклада в дисциплину.</p>
+      </div>
+      <span class="task-badge">таблица</span>
+    </div>
+
+    <div class="task">
+      <div class="task-num">2</div>
+      <div class="task-body">
+        <p>Дай определения понятиям: <strong>демон</strong>, <strong>бес</strong>, <strong>инкуб</strong>, <strong>суккуб</strong>, <strong>джинн</strong>. Укажи сходства и различия в традициях не менее двух культур.</p>
+      </div>
+      <span class="task-badge">определения</span>
+    </div>
+
+    <div id="hw-extra" class="hw-header">
+      <div class="hw-header-dot"></div>
+      <div class="hw-header-text">Дополнительные задания</div>
+      <div class="hw-header-line"></div>
+    </div>
+
+    <div class="task">
+      <div class="task-num">3</div>
+      <div class="task-body">
+        <p>Найди и сравни демонические пантеоны в шумерской и японской традициях. Выдели общие архетипы и объясни возможные причины типологического сходства.</p>
+      </div>
+      <span class="task-badge">сравн. анализ</span>
+    </div>
+
+    <div id="hw-essay" class="hw-header">
+      <div class="hw-header-dot"></div>
+      <div class="hw-header-text">Эссе</div>
+      <div class="hw-header-line"></div>
+    </div>
+
+    <div class="task">
+      <div class="task-num">4</div>
+      <div class="task-body">
+        <p>«Демонология — зеркало человеческих страхов, а не наука о реальных существах». Согласна ли ты с этим тезисом? Эссе 600–800 слов, не менее 3 источников.</p>
+      </div>
+      <span class="task-badge">эссе</span>
+    </div>
+
+    <!-- Навигация между лекциями -->
+    <div class="lecture-nav">
+      <a href="#" class="lnav-btn" style="text-align:right; align-items:flex-end">
+        <span class="lnav-label">← предыдущая</span>
+        <span class="lnav-title">—</span>
+      </a>
+      <a href="#" class="lnav-btn" style="align-items:flex-start">
+        <span class="lnav-label">следующая →</span>
+        <span class="lnav-title">Классификация демонов</span>
+      </a>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>
