@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Планер — Гримуар</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #1d182e;
+  --surface: rgba(255,255,255,0.025);
+  --border: rgba(255,255,255,0.06);
+  --text: #e8e2f5;
+  --muted: rgba(157,146,184,0.6);
+  --faint: rgba(157,146,184,0.28);
+  --purple: #c084fc; --purple-bg: rgba(192,132,252,0.07); --purple-border: rgba(192,132,252,0.2);
+  --gold: #fcd34d;   --gold-bg: rgba(252,211,77,0.07);    --gold-border: rgba(252,211,77,0.2);
+  --red: #fca5a5;    --red-bg: rgba(252,165,165,0.07);    --red-border: rgba(252,165,165,0.2);
+  --green: #86efac;  --green-bg: rgba(134,239,172,0.07);  --green-border: rgba(134,239,172,0.2);
+}
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+
+.top-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.5rem 3rem; border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: rgba(29,24,46,0.95); backdrop-filter: blur(12px); z-index: 100;
+}
+.logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; color: #c4b0fc; text-decoration: none; }
+.breadcrumb { font-size: 12px; color: var(--muted); }
+
+.page { max-width: 1100px; margin: 0 auto; padding: 2.5rem 3rem 5rem; }
+
+/* ── Шапка с сезоном ── */
+.page-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1.5rem; }
+.page-title { font-family: 'Cormorant Garamond', serif; font-size: 42px; font-weight: 300; line-height: 1.1; }
+.page-title span { color: #c4b0fc; font-style: italic; }
+
+.season-picker { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.season-btn {
+  padding: 7px 16px; border-radius: 20px; font-size: 12px; font-family: 'DM Sans', sans-serif;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--muted);
+  cursor: pointer; transition: all 0.2s; letter-spacing: 0.04em;
+}
+.season-btn:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+.season-btn.active { background: var(--purple-bg); border-color: var(--purple-border); color: var(--purple); }
+.season-year {
+  padding: 7px 12px; border-radius: 8px; font-size: 13px; font-family: 'DM Sans', sans-serif;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border); color: var(--muted);
+  width: 80px; outline: none; transition: border-color 0.15s; text-align: center;
+}
+.season-year:focus { border-color: rgba(192,132,252,0.3); color: var(--text); }
+
+/* ── Прогресс ── */
+.progress-bar-overview {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 1.8rem 2.5rem; margin-bottom: 2.5rem;
+  display: grid; grid-template-columns: auto 1fr; gap: 2.5rem; align-items: center;
+}
+.ring-wrap { position: relative; width: 110px; height: 110px; flex-shrink: 0; }
+.ring { transform: rotate(-90deg); }
+.ring-bg { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 7; }
+.ring-fill { fill: none; stroke: var(--purple); stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
+.ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.ring-pct { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: var(--purple); line-height: 1; }
+.ring-lbl { font-size: 9px; color: var(--faint); letter-spacing: 0.1em; text-transform: uppercase; }
+.stats { display: flex; flex-direction: column; gap: 0.9rem; }
+.stat-row { display: flex; align-items: center; gap: 12px; }
+.stat-lbl { font-size: 13px; color: var(--muted); min-width: 150px; }
+.bar-wrap { flex: 1; height: 3px; background: rgba(255,255,255,0.06); border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+.stat-val { font-size: 12px; color: var(--faint); min-width: 36px; text-align: right; }
+
+/* ── Сетка ── */
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; align-items: start; }
+@media (max-width: 860px) { .grid-3 { grid-template-columns: 1fr; } }
+
+.section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+.section-head {
+  padding: 1.1rem 1.3rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.section-icon { font-size: 16px; }
+.section-title { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; flex: 1; }
+.section-count { font-size: 11px; color: var(--faint); background: rgba(255,255,255,0.04); padding: 2px 8px; border-radius: 20px; }
+.section-goals .section-title { color: var(--purple); }
+.section-debts .section-title  { color: var(--red); }
+.section-duels .section-title  { color: var(--gold); }
+.section-body { padding: 0.8rem; }
+
+/* ── Кнопка добавить ── */
+.add-btn {
+  width: 100%; padding: 8px; background: transparent;
+  border: 1px dashed rgba(255,255,255,0.08); border-radius: 8px;
+  color: var(--faint); font-size: 12px; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; transition: all 0.2s; margin-top: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.section-goals .add-btn:hover { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
+.section-debts .add-btn:hover  { border-color: var(--red-border);    color: var(--red);    background: var(--red-bg); }
+.section-duels .add-btn:hover  { border-color: var(--gold-border);   color: var(--gold);   background: var(--gold-bg); }
+
+/* ══════════════════════════
+   КАРТОЧКА ЦЕЛИ (расширяемая)
+══════════════════════════ */
+.goal-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.055);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+.goal-card:hover { border-color: rgba(255,255,255,0.1); }
+.goal-card.expanded { border-color: var(--purple-border); }
+
+.goal-card-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 10px; cursor: pointer;
+}
+.goal-check {
+  width: 17px; height: 17px; border-radius: 4px;
+  border: 1.5px solid var(--purple); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; cursor: pointer;
+}
+.goal-check.done { background: var(--purple); }
+.goal-check.done::after { content: '✓'; font-size: 10px; color: #1d182e; font-weight: 700; }
+.goal-subject { font-size: 14px; color: var(--text); flex: 1; line-height: 1.3; }
+.goal-subject.done { text-decoration: line-through; color: var(--faint); }
+.goal-mini-progress { font-size: 10px; color: var(--faint); white-space: nowrap; }
+.goal-expand-btn {
+  background: none; border: none; color: var(--faint); cursor: pointer;
+  font-size: 12px; padding: 2px 4px; transition: all 0.2s; border-radius: 4px;
+}
+.goal-card.expanded .goal-expand-btn { color: var(--purple); transform: rotate(90deg); }
+.goal-del-btn {
+  background: none; border: none; color: var(--faint); cursor: pointer;
+  font-size: 12px; padding: 2px 4px; transition: all 0.15s; border-radius: 4px; opacity: 0;
+}
+.goal-card:hover .goal-del-btn { opacity: 1; }
+.goal-del-btn:hover { color: var(--red); background: var(--red-bg); }
+
+/* Раскрытая часть */
+.goal-card-body { display: none; padding: 0 10px 10px; border-top: 1px solid rgba(255,255,255,0.04); margin-top: 0; padding-top: 10px; }
+.goal-card.expanded .goal-card-body { display: block; }
+
+/* Блоки внутри карточки */
+.goal-section { margin-bottom: 10px; }
+.goal-section-lbl {
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--faint); margin-bottom: 6px;
+}
+
+/* Счётчик лекций */
+.lecture-counter { display: flex; align-items: center; gap: 8px; }
+.counter-btn {
+  width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+  background: none; color: var(--muted); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif; line-height: 1;
+}
+.counter-btn:hover { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
+.counter-val { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--purple); min-width: 28px; text-align: center; }
+.counter-lbl { font-size: 12px; color: var(--faint); }
+
+/* Типы домашек */
+.hw-types { display: flex; gap: 6px; flex-wrap: wrap; }
+.hw-type-btn {
+  padding: 4px 12px; border-radius: 20px; font-size: 11px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  color: var(--faint); cursor: pointer; transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.hw-type-btn.on { background: var(--purple-bg); border-color: var(--purple-border); color: var(--purple); }
+
+/* Подпункты */
+.subgoal-list { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+.subgoal-item { display: flex; align-items: center; gap: 7px; }
+.subgoal-check {
+  width: 14px; height: 14px; border-radius: 3px; border: 1.5px solid rgba(157,146,184,0.3);
+  flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.subgoal-check.done { background: rgba(157,146,184,0.3); border-color: rgba(157,146,184,0.3); }
+.subgoal-check.done::after { content: '✓'; font-size: 9px; color: #1d182e; font-weight: 700; }
+.subgoal-text { font-size: 12px; color: var(--muted); flex: 1; line-height: 1.4; }
+.subgoal-text.done { text-decoration: line-through; color: var(--faint); }
+.subgoal-del { background: none; border: none; color: var(--faint); cursor: pointer; font-size: 11px; opacity: 0; padding: 1px 3px; transition: all 0.15s; border-radius: 3px; }
+.subgoal-item:hover .subgoal-del { opacity: 1; }
+.subgoal-del:hover { color: var(--red); }
+
+.subgoal-add-row { display: flex; gap: 6px; }
+.subgoal-input {
+  flex: 1; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 6px; padding: 5px 8px; font-size: 12px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.15s;
+}
+.subgoal-input:focus { border-color: rgba(192,132,252,0.3); }
+.subgoal-input::placeholder { color: var(--faint); }
+.subgoal-add-btn {
+  padding: 5px 10px; background: var(--purple-bg); border: 1px solid var(--purple-border);
+  border-radius: 6px; color: var(--purple); font-size: 11px; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all 0.15s; white-space: nowrap;
+}
+.subgoal-add-btn:hover { background: rgba(192,132,252,0.15); }
+
+/* ── Карточки долгов/дуэлей ── */
+.card-item {
+  background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px; padding: 0.85rem 1rem; margin-bottom: 6px;
+  position: relative; transition: border-color 0.15s;
+}
+.card-item:hover { border-color: rgba(255,255,255,0.1); }
+.card-item.done { opacity: 0.45; }
+.card-subj {
+  font-size: 11px; padding: 2px 8px; border-radius: 20px;
+  display: inline-block; margin-bottom: 5px;
+}
+.section-debts .card-subj { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.section-duels .card-subj { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-border); }
+.card-title { font-size: 13px; color: var(--text); line-height: 1.4; margin-bottom: 5px; }
+.card-title.done { text-decoration: line-through; color: var(--faint); }
+.card-meta { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
+.card-deadline { font-size: 11px; color: var(--faint); }
+.card-deadline.urgent { color: var(--red); }
+.card-result { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-weight: 500; cursor: pointer; }
+.result-win     { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-border); }
+.result-lose    { background: var(--red-bg); color: var(--red); border: 1px solid var(--red-border); }
+.result-pending { background: rgba(255,255,255,0.04); color: var(--faint); border: 1px solid var(--border); }
+.card-actions { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; opacity: 0; transition: opacity 0.15s; }
+.card-item:hover .card-actions { opacity: 1; }
+.card-act { background: none; border: none; font-size: 12px; cursor: pointer; padding: 3px 5px; border-radius: 4px; color: var(--faint); transition: all 0.15s; }
+.card-act:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+/* ── Модалки ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(10,6,20,0.75); backdrop-filter: blur(6px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 2rem; }
+.modal-overlay.open { display: flex; }
+.modal { background: #231d37; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem; width: 100%; max-width: 440px; animation: mIn 0.2s ease; }
+@keyframes mIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+.modal-title { font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 600; margin-bottom: 1.5rem; }
+.f-field { margin-bottom: 1rem; }
+.f-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; display: block; }
+.f-input, .f-select, .f-textarea {
+  width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px; padding: 9px 12px; font-family: 'DM Sans', sans-serif; font-size: 14px;
+  font-weight: 300; color: var(--text); outline: none; transition: border-color 0.15s;
+}
+.f-input:focus, .f-select:focus, .f-textarea:focus { border-color: rgba(192,132,252,0.4); }
+.f-select option { background: #231d37; }
+.f-textarea { resize: vertical; min-height: 70px; }
+.f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
+.btn-c { padding: 8px 18px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.15s; }
+.btn-c:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
+.btn-s { padding: 8px 22px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+
+/* Subject picker */
+.subj-picker { display: flex; flex-wrap: wrap; gap: 5px; max-height: 180px; overflow-y: auto; }
+.subj-btn { padding: 3px 11px; border-radius: 20px; font-size: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.subj-btn:hover { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
+.subj-btn.sel { border-color: var(--purple-border); color: var(--purple); background: var(--purple-bg); }
+
+/* Hw type toggles in modal */
+.hw-toggles { display: flex; gap: 7px; flex-wrap: wrap; }
+.hw-tog { padding: 5px 14px; border-radius: 20px; font-size: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); color: var(--muted); cursor: pointer; transition: all 0.15s; font-family: 'DM Sans', sans-serif; }
+.hw-tog.on { background: var(--purple-bg); border-color: var(--purple-border); color: var(--purple); }
+
+.empty { text-align: center; padding: 1.2rem; color: var(--faint); font-size: 12px; font-style: italic; }
+
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a href="index.html" class="logo">Гримуар</a>
+  <span class="breadcrumb">Планер</span>
+  <a href="planner.html" style="font-size:12px;color:rgba(157,146,184,0.5);text-decoration:none;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.07);transition:all 0.2s" onmouseover="this.style.color='#c4b0fc';this.style.borderColor='rgba(192,132,252,0.3)'" onmouseout="this.style.color='rgba(157,146,184,0.5)';this.style.borderColor='rgba(255,255,255,0.07)'">✦ Планер</a>
+</div>
+
+<div class="page">
+
+  <!-- Шапка -->
+  <div class="page-top">
+    <h1 class="page-title">Планер <span>семестра</span></h1>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
+      <div class="season-picker">
+        <button class="season-btn" onclick="setSeason('Весна')">🌸 Весна</button>
+        <button class="season-btn" onclick="setSeason('Лето')">☀️ Лето</button>
+        <button class="season-btn active" onclick="setSeason('Осень')">🍂 Осень</button>
+        <button class="season-btn" onclick="setSeason('Зима')">❄️ Зима</button>
+        <input class="season-year" type="number" id="yearInput" value="2026" onchange="setYear(this.value)" min="2020" max="2099">
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="archiveSemester()" style="padding:5px 14px;border-radius:20px;font-size:11px;font-family:'DM Sans',sans-serif;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--faint);cursor:pointer;transition:all 0.2s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--faint)'">📦 завершить семестр</button>
+        <button onclick="openArchive()" style="padding:5px 14px;border-radius:20px;font-size:11px;font-family:'DM Sans',sans-serif;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--faint);cursor:pointer;transition:all 0.2s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--faint)'">🗂 архив</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Прогресс -->
+  <div class="progress-bar-overview">
+    <div class="ring-wrap">
+      <svg class="ring" width="110" height="110" viewBox="0 0 110 110">
+        <circle class="ring-bg" cx="55" cy="55" r="46"/>
+        <circle class="ring-fill" id="ringFill" cx="55" cy="55" r="46" stroke-dasharray="289" stroke-dashoffset="289"/>
+      </svg>
+      <div class="ring-text">
+        <div class="ring-pct" id="ringNum">0%</div>
+        <div class="ring-lbl">целей</div>
+      </div>
+    </div>
+    <div class="stats">
+      <div id="motivationText" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--muted);margin-bottom:0.8rem;line-height:1.4"></div>
+      <div class="stat-row">
+        <span class="stat-lbl">Цели семестра</span>
+        <div class="bar-wrap"><div class="bar-fill" id="bGoals" style="background:var(--purple);width:0%"></div></div>
+        <span class="stat-val" id="vGoals">0/0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">Долги закрыты</span>
+        <div class="bar-wrap"><div class="bar-fill" id="bDebts" style="background:var(--red);width:0%"></div></div>
+        <span class="stat-val" id="vDebts">0/0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">Дуэли сыграны</span>
+        <div class="bar-wrap"><div class="bar-fill" id="bDuels" style="background:var(--gold);width:0%"></div></div>
+        <span class="stat-val" id="vDuels">0/0</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-lbl">Победы в дуэлях</span>
+        <div class="bar-wrap"><div class="bar-fill" id="bWins" style="background:var(--green);width:0%"></div></div>
+        <span class="stat-val" id="vWins">0/0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Цель по баллам -->
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem 2.5rem;margin-bottom:2.5rem;display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap">
+    <div>
+      <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--faint);margin-bottom:0.4rem">Цель по баллам за семестр</div>
+      <div style="display:flex;align-items:baseline;gap:6px">
+        <input id="scoreCurrentInput" type="number" min="0"
+          style="width:64px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--green);text-align:center;outline:none"
+          oninput="updateScore()" placeholder="0">
+        <span style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--faint)">/</span>
+        <input id="scoreGoalInput" type="number" min="0"
+          style="width:64px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:600;color:var(--purple);text-align:center;outline:none"
+          oninput="updateScore()" placeholder="0">
+        <span style="font-size:13px;color:var(--faint)">баллов</span>
+      </div>
+    </div>
+    <div style="flex:1;min-width:200px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:12px;color:var(--muted)" id="scoreLabel">введи цель и текущий балл</span>
+        <span style="font-size:12px;color:var(--faint)" id="scorePct"></span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden">
+        <div id="scoreBar" style="height:100%;border-radius:3px;background:var(--green);width:0%;transition:width 0.5s ease,background 0.4s ease"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Три колонки -->
+  <div class="grid-3">
+
+    <!-- ЦЕЛИ -->
+    <div class="section section-goals">
+      <div class="section-head">
+        <span class="section-icon">✦</span>
+        <span class="section-title">Цели семестра</span>
+        <span class="section-count" id="cGoals">0</span>
+      </div>
+      <div class="section-body">
+        <div id="goalsList"></div>
+        <button class="add-btn" onclick="openGoalModal()">+ добавить предмет</button>
+      </div>
+    </div>
+
+    <!-- ДОЛГИ -->
+    <div class="section section-debts">
+      <div class="section-head">
+        <span class="section-icon">⚠</span>
+        <span class="section-title">Долги</span>
+        <span class="section-count" id="cDebts">0</span>
+      </div>
+      <div class="section-body">
+        <div id="debtsList"></div>
+        <button class="add-btn" onclick="openDebtModal()">+ добавить долг</button>
+      </div>
+    </div>
+
+    <!-- ДУЭЛИ -->
+    <div class="section section-duels">
+      <div class="section-head">
+        <span class="section-icon">⚔</span>
+        <span class="section-title">Дуэли</span>
+        <span class="section-count" id="cDuels">0</span>
+      </div>
+      <div style="display:flex;gap:8px;padding:0.5rem 1.3rem;border-bottom:1px solid var(--border)">
+        <span id="duelStatWin" style="font-size:11px;color:var(--green)">🏆 0 побед</span>
+        <span style="color:var(--faint);font-size:11px">·</span>
+        <span id="duelStatLose" style="font-size:11px;color:var(--red)">0 поражений</span>
+      </div>
+      <div class="section-body">
+        <div id="duelsList"></div>
+        <button class="add-btn" onclick="openDuelModal()">+ заключить дуэль</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- МОДАЛКА: цель -->
+<div class="modal-overlay" id="goalModal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--purple)">Новая цель</div>
+    <div class="f-field">
+      <label class="f-label">Предмет</label>
+      <div class="subj-picker" id="goalPicker"></div>
+    </div>
+    <div class="f-field">
+      <label class="f-label">Сколько лекций хочу пройти</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="counter-btn" onclick="changeModalLectures(-1)">−</button>
+        <span class="counter-val" id="modalLectureVal" style="font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--purple);min-width:30px;text-align:center">0</span>
+        <button class="counter-btn" onclick="changeModalLectures(1)">+</button>
+        <span style="font-size:12px;color:var(--faint)">лекций</span>
+      </div>
+    </div>
+    <div class="f-field">
+      <label class="f-label">Какие домашки хочу выполнить</label>
+      <div class="hw-toggles">
+        <button class="hw-tog on" id="togMain" onclick="toggleHwType('main')">📌 Основные</button>
+        <button class="hw-tog" id="togExtra" onclick="toggleHwType('extra')">✦ Дополнительные</button>
+        <button class="hw-tog" id="togControl" onclick="toggleHwType('control')">📋 Контрольные</button>
+        <button class="hw-tog" id="togPractice" onclick="toggleHwType('practice')">🧪 Практические</button>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-c" onclick="closeModals()">Отмена</button>
+      <button class="btn-s" style="background:var(--purple-bg);border:1px solid var(--purple-border);color:var(--purple)" onclick="saveGoal()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА: долг -->
+<div class="modal-overlay" id="debtModal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--red)">Добавить долг</div>
+    <div class="f-field">
+      <label class="f-label">Тип долга</label>
+      <div class="hw-toggles" id="debtTypePicker">
+        <button class="hw-tog" style="--ton:var(--red-bg);--tborder:var(--red-border);--tcol:var(--red)" onclick="pickDebtType(this,'zero')">🔴 Получила 0</button>
+        <button class="hw-tog" onclick="pickDebtType(this,'promised')">📬 Обещала кому-то</button>
+        <button class="hw-tog" onclick="pickDebtType(this,'late')">⏰ Не сдала вовремя</button>
+        <button class="hw-tog" onclick="pickDebtType(this,'unfinished')">✂️ Не закончила</button>
+      </div>
+    </div>
+    <div class="f-field">
+      <label class="f-label">Приоритет</label>
+      <div class="hw-toggles" id="debtPriorityPicker">
+        <button class="hw-tog on" onclick="pickDebtPriority(this,'high')">🔥 Горит</button>
+        <button class="hw-tog" onclick="pickDebtPriority(this,'normal')">· Обычный</button>
+        <button class="hw-tog" onclick="pickDebtPriority(this,'low')">💤 Когда-нибудь</button>
+      </div>
+    </div>
+    <div class="f-field">
+      <label class="f-label">Предмет</label>
+      <div class="subj-picker" id="debtSubjPicker"></div>
+    </div>
+    <div class="f-field">
+      <label class="f-label">Лекция (необязательно)</label>
+      <input class="f-input" id="dLecture" placeholder="напр. Лекция 3 или название">
+    </div>
+    <div class="f-field">
+      <label class="f-label">Описание</label>
+      <textarea class="f-textarea" id="dDesc" placeholder="что конкретно нужно сделать..."></textarea>
+    </div>
+    <div class="f-field">
+      <label class="f-label">Дедлайн (необязательно)</label>
+      <input class="f-input" id="dDeadline" type="date">
+    </div>
+    <div class="modal-btns">
+      <button class="btn-c" onclick="closeModals()">Отмена</button>
+      <button class="btn-s" style="background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)" onclick="saveDebt()">Добавить</button>
+    </div>
+  </div>
+</div>
+
+<!-- МОДАЛКА: архив -->
+<div class="modal-overlay" id="archiveModal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title" style="color:var(--muted)">🗂 Архив семестров</div>
+    <div id="archiveList" style="max-height:400px;overflow-y:auto"></div>
+    <div class="modal-btns">
+      <button class="btn-c" onclick="closeModals()">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="duelModal">
+  <div class="modal">
+    <div class="modal-title" style="color:var(--gold)">Заключить дуэль</div>
+    <div class="f-row">
+      <div class="f-field">
+        <label class="f-label">Предмет</label>
+        <input class="f-input" id="duSubject" placeholder="предмет">
+      </div>
+      <div class="f-field">
+        <label class="f-label">Соперник</label>
+        <input class="f-input" id="duOpponent" placeholder="имя">
+      </div>
+    </div>
+    <div class="f-field">
+      <label class="f-label">Задание</label>
+      <textarea class="f-textarea" id="duTask" placeholder="описание задания..."></textarea>
+    </div>
+    <div class="f-row">
+      <div class="f-field">
+        <label class="f-label">Дедлайн</label>
+        <input class="f-input" id="duDeadline" type="date">
+      </div>
+      <div class="f-field">
+        <label class="f-label">Результат</label>
+        <select class="f-select" id="duResult">
+          <option value="pending">В процессе</option>
+          <option value="win">Победа</option>
+          <option value="lose">Поражение</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-c" onclick="closeModals()">Отмена</button>
+      <button class="btn-s" style="background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold)" onclick="saveDuel()">Заключить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUBJECTS = ['Алхимия','Артефакторика','Астрология','Астрономия','Вампирология','Демонология','Драконология','Египетская мифология','ЗОТИ','Заклинания','Зельеварение','И.Н.П.У.Т.','ИДЦ','ИМС','История Хогвартса','История исчезнувших цивилизаций','Квиддич','Колдомедицина','Логика','Маггловедение','Магическая журналистика','Магическая криминалистика','Магическая география','Магическое право','Магия ароматов','Магия стихий','Нежитиведение','Нумерология','Неестествознание','Оборотенология','Онейрология','Основы мракоборства','Психология волшебников','Расы Магического мира','Рунология','Симвология','Скандинавская мифология','Славянская мифология','ТиН','Травология','Трансфигурация','Хиромантия','Шаманизм','Язык тела','ПВМ','Гадания','Таро'];
+
+const SEASONS = { 'Весна':'🌸', 'Лето':'☀️', 'Осень':'🍂', 'Зима':'❄️' };
+const HW_LABELS = { main:'📌 Основные', extra:'✦ Дополнительные', control:'📋 Контрольные', practice:'🧪 Практические' };
+
+let data = JSON.parse(localStorage.getItem('grimoire_planner2') || JSON.stringify({ season:'Осень', year:2026, goals:[], debts:[], duels:[] }));
+let modalLectures = 0;
+let modalHwTypes = { main:true, extra:false, control:false, practice:false };
+let selectedSubject = null;
+
+function save() { localStorage.setItem('grimoire_planner2', JSON.stringify(data)); render(); }
+
+// Сезон
+function setSeason(s) {
+  data.season = s;
+  document.querySelectorAll('.season-btn').forEach(b => b.classList.toggle('active', b.textContent.includes(s)));
+  save();
+}
+function setYear(y) { data.year = parseInt(y); save(); }
+
+// Рендер
+function render() {
+  document.querySelectorAll('.season-btn').forEach(b => b.classList.toggle('active', b.textContent.includes(data.season)));
+  document.getElementById('yearInput').value = data.year;
+  renderGoals(); renderDebts(); renderDuels(); renderProgress(); initScore();
+}
+
+function renderGoals() {
+  const el = document.getElementById('goalsList');
+  document.getElementById('cGoals').textContent = data.goals.length;
+  if (!data.goals.length) { el.innerHTML = '<div class="empty">нет целей</div>'; return; }
+  el.innerHTML = data.goals.map((g, i) => {
+    const subDone = g.subgoals ? g.subgoals.filter(s=>s.done).length : 0;
+    const subTotal = g.subgoals ? g.subgoals.length : 0;
+    const miniProg = g.lectures > 0 || subTotal > 0 ? `${subDone}/${subTotal > 0 ? subTotal : '—'}` : '';
+    const hwBadges = g.hwTypes ? Object.entries(g.hwTypes).filter(([,v])=>v).map(([k])=>`<span style="font-size:10px;color:var(--faint)">${HW_LABELS[k]}</span>`).join(' · ') : '';
+    const subgoalsHtml = subTotal > 0 ? `
+      <div class="subgoal-list">${g.subgoals.map((s,j)=>`
+        <div class="subgoal-item">
+          <div class="subgoal-check ${s.done?'done':''}" onclick="toggleSubgoal(${i},${j})"></div>
+          <span class="subgoal-text ${s.done?'done':''}">${s.text}</span>
+          <button class="subgoal-del" onclick="delSubgoal(${i},${j})">✕</button>
+        </div>`).join('')}
+      </div>` : '';
+    return `
+    <div class="goal-card ${g.expanded?'expanded':''}" id="goal-${i}">
+      <div class="goal-card-head">
+        <div class="goal-check ${g.done?'done':''}" onclick="toggleGoal(event,${i})"></div>
+        <span class="goal-subject ${g.done?'done':''}">${g.subject}</span>
+        ${miniProg ? `<span class="goal-mini-progress">${miniProg}</span>` : ''}
+        <button class="goal-expand-btn" onclick="expandGoal(${i})">›</button>
+        <button class="goal-del-btn" onclick="delGoal(event,${i})">✕</button>
+      </div>
+      <div class="goal-card-body">
+        ${g.lectures > 0 ? `
+        <div class="goal-section">
+          <div class="goal-section-lbl">Лекций запланировано</div>
+          <div class="lecture-counter">
+            <button class="counter-btn" onclick="changeLectures(${i},-1)">−</button>
+            <span class="counter-val">${g.lectures}</span>
+            <button class="counter-btn" onclick="changeLectures(${i},1)">+</button>
+            <span class="counter-lbl">лекций</span>
+          </div>
+        </div>` : ''}
+        ${hwBadges ? `<div class="goal-section"><div class="goal-section-lbl">Домашки</div><div style="display:flex;gap:5px;flex-wrap:wrap">${hwBadges}</div></div>` : ''}
+        <div class="goal-section">
+          <div class="goal-section-lbl">Подпункты</div>
+          ${subgoalsHtml}
+          <div class="subgoal-add-row">
+            <input class="subgoal-input" id="sub-input-${i}" placeholder="добавить подпункт..." onkeydown="if(event.key==='Enter')addSubgoal(${i})">
+            <button class="subgoal-add-btn" onclick="addSubgoal(${i})">+ добавить</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDebts() {
+  const el = document.getElementById('debtsList');
+  document.getElementById('cDebts').textContent = data.debts.length;
+  if (!data.debts.length) { el.innerHTML = '<div class="empty">долгов нет 🎉</div>'; return; }
+  const TYPE_LABELS = { zero:'🔴 Получила 0', promised:'📬 Обещала', late:'⏰ Не сдала', unfinished:'✂️ Не закончила' };
+  const PRIORITY_ORDER = { high:0, normal:1, low:2 };
+  const PRIORITY_STYLE = {
+    high:  'background:rgba(252,165,165,0.12);color:var(--red);border:1px solid var(--red-border)',
+    normal:'background:rgba(255,255,255,0.05);color:var(--muted);border:1px solid var(--border)',
+    low:   'background:rgba(157,146,184,0.06);color:var(--faint);border:1px solid rgba(157,146,184,0.12)'
+  };
+  const PRIORITY_LABEL = { high:'🔥 Горит', normal:'· Обычный', low:'💤 Когда-нибудь' };
+  const sorted = [...data.debts.map((d,i)=>({...d,_i:i}))].sort((a,b)=>{
+    if(a.done!==b.done) return a.done?1:-1;
+    return (PRIORITY_ORDER[a.priority||'normal'])-(PRIORITY_ORDER[b.priority||'normal']);
+  });
+  el.innerHTML = sorted.map(d => {
+    const i = d._i;
+    const urgent = d.deadline && !d.done && new Date(d.deadline) < new Date(Date.now()+3*86400000);
+    const typeLabel = TYPE_LABELS[d.type] || '';
+    return `<div class="card-item ${d.done?'done':''}">
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px;align-items:center">
+        <span class="card-subj">${d.subject}</span>
+        ${typeLabel?`<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)">${typeLabel}</span>`:''}
+        <span style="font-size:10px;padding:2px 8px;border-radius:20px;${PRIORITY_STYLE[d.priority||'normal']}">${PRIORITY_LABEL[d.priority||'normal']}</span>
+      </div>
+      ${d.lecture?`<div style="font-size:11px;color:var(--faint);margin-bottom:3px">📖 ${d.lecture}</div>`:''}
+      <div class="card-title ${d.done?'done':''}">${d.desc}</div>
+      <div class="card-meta">${d.deadline?`<span class="card-deadline ${urgent?'urgent':''}">⏱ ${fmtDate(d.deadline)}</span>`:''}</div>
+      <div class="card-actions">
+        <button class="card-act" onclick="toggleDebt(${i})" title="${d.done?'вернуть':'закрыть'}">${d.done?'↩':'✓'}</button>
+        <button class="card-act" onclick="delDebt(${i})">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDuels() {
+  const el = document.getElementById('duelsList');
+  document.getElementById('cDuels').textContent = data.duels.length;
+  if (!data.duels.length) { el.innerHTML = '<div class="empty">дуэлей нет</div>'; return; }
+  const RL = { win:'Победа', lose:'Поражение', pending:'В процессе' };
+  el.innerHTML = data.duels.map((d,i) => `
+    <div class="card-item">
+      <span class="card-subj">${d.subject}</span>
+      <div class="card-title">vs <strong>${d.opponent}</strong></div>
+      ${d.task ? `<div style="font-size:11px;color:var(--faint);margin-bottom:5px;line-height:1.4">${d.task}</div>` : ''}
+      <div class="card-meta">
+        ${d.deadline?`<span class="card-deadline">⏱ ${fmtDate(d.deadline)}</span>`:''}
+        <span class="card-result result-${d.result}" onclick="cycleDuel(${i})" title="нажми чтобы изменить">${RL[d.result]}</span>
+      </div>
+      <div class="card-actions"><button class="card-act" onclick="delDuel(${i})">✕</button></div>
+    </div>`).join('');
+}
+
+function renderProgress() {
+  const gDone = data.goals.filter(g=>g.done).length, gTotal = data.goals.length;
+  const dDone = data.debts.filter(d=>d.done).length, dTotal = data.debts.length;
+  const duPlayed = data.duels.filter(d=>d.result!=='pending').length, duTotal = data.duels.length;
+  const duWon = data.duels.filter(d=>d.result==='win').length;
+  const duLose = data.duels.filter(d=>d.result==='lose').length;
+  const pct = gTotal ? Math.round(gDone/gTotal*100) : 0;
+
+  // Цвет кольца по прогрессу
+  const ringColor = pct >= 70 ? '#86efac' : pct >= 30 ? '#fcd34d' : '#fca5a5';
+  const ring = document.getElementById('ringFill');
+  ring.style.strokeDashoffset = 289 - (289*pct/100);
+  ring.style.stroke = gTotal === 0 ? '#c084fc' : ringColor;
+  document.getElementById('ringNum').style.color = gTotal === 0 ? 'var(--purple)' : ringColor;
+  document.getElementById('ringNum').textContent = pct+'%';
+
+  // Мотивационная строка
+  const left = gTotal - gDone;
+  let motiv = '';
+  if (!gTotal) motiv = 'добавь первую цель семестра ✦';
+  else if (pct === 100) motiv = 'все цели достигнуты — семестр завершён 🎉';
+  else if (pct >= 70) motiv = `почти там — осталось всего ${left} ${plural(left,'цель','цели','целей')}`;
+  else if (pct >= 30) motiv = `хороший темп, ещё ${left} ${plural(left,'цель','цели','целей')} впереди`;
+  else if (pct > 0) motiv = `начало положено — ${left} ${plural(left,'цель','цели','целей')} ждут`;
+  else motiv = `${gTotal} ${plural(gTotal,'цель','цели','целей')} на этот семестр`;
+  document.getElementById('motivationText').textContent = motiv;
+
+  setBar('bGoals','vGoals',gDone,gTotal);
+  setBar('bDebts','vDebts',dDone,dTotal);
+  setBar('bDuels','vDuels',duPlayed,duTotal);
+  setBar('bWins','vWins',duWon,duTotal);
+
+  // Счётчик дуэлей
+  document.getElementById('duelStatWin').textContent  = `🏆 ${duWon} ${plural(duWon,'победа','победы','побед')}`;
+  document.getElementById('duelStatLose').textContent = `${duLose} ${plural(duLose,'поражение','поражения','поражений')}`;
+}
+
+function plural(n, one, few, many) {
+  const mod10 = n % 10, mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+  return many;
+}
+function setBar(bid,vid,done,total) {
+  document.getElementById(bid).style.width = total?(done/total*100)+'%':'0%';
+  document.getElementById(vid).textContent = done+'/'+total;
+}
+function fmtDate(s) { return new Date(s).toLocaleDateString('ru-RU',{day:'numeric',month:'short'}); }
+
+// Действия
+function toggleGoal(e,i) { e.stopPropagation(); data.goals[i].done=!data.goals[i].done; save(); }
+function expandGoal(i) { data.goals[i].expanded=!data.goals[i].expanded; save(); }
+function delGoal(e,i) { e.stopPropagation(); data.goals.splice(i,1); save(); }
+function changeLectures(i,d) { data.goals[i].lectures=Math.max(0,(data.goals[i].lectures||0)+d); save(); }
+function toggleSubgoal(i,j) { data.goals[i].subgoals[j].done=!data.goals[i].subgoals[j].done; save(); }
+function delSubgoal(i,j) { data.goals[i].subgoals.splice(j,1); save(); }
+function addSubgoal(i) {
+  const inp = document.getElementById('sub-input-'+i);
+  const txt = inp.value.trim();
+  if (!txt) return;
+  if (!data.goals[i].subgoals) data.goals[i].subgoals=[];
+  data.goals[i].subgoals.push({text:txt,done:false});
+  inp.value=''; save();
+}
+function toggleDebt(i) { data.debts[i].done=!data.debts[i].done; save(); }
+function delDebt(i) { data.debts.splice(i,1); save(); }
+function cycleDuel(i) { const o=['pending','win','lose']; data.duels[i].result=o[(o.indexOf(data.duels[i].result)+1)%3]; save(); }
+function delDuel(i) { data.duels.splice(i,1); save(); }
+
+// Модалка: цель
+function openGoalModal() {
+  selectedSubject=null; modalLectures=0; modalHwTypes={main:true,extra:false,control:false,practice:false};
+  document.getElementById('modalLectureVal').textContent='0';
+  ['main','extra','control','practice'].forEach(k => document.getElementById('tog'+k.charAt(0).toUpperCase()+k.slice(1)).classList.toggle('on', k==='main'));
+  const taken = data.goals.map(g=>g.subject);
+  document.getElementById('goalPicker').innerHTML = SUBJECTS.filter(s=>!taken.includes(s)).map(s=>
+    `<button class="subj-btn" onclick="pickSubj(this,'${s}')">${s}</button>`).join('');
+  document.getElementById('goalModal').classList.add('open');
+}
+function pickSubj(btn,name) {
+  document.querySelectorAll('.subj-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel'); selectedSubject=name;
+}
+function changeModalLectures(d) {
+  modalLectures=Math.max(0,modalLectures+d);
+  document.getElementById('modalLectureVal').textContent=modalLectures;
+}
+function toggleHwType(k) {
+  modalHwTypes[k]=!modalHwTypes[k];
+  const id='tog'+k.charAt(0).toUpperCase()+k.slice(1);
+  document.getElementById(id).classList.toggle('on',modalHwTypes[k]);
+}
+function saveGoal() {
+  if (!selectedSubject) return;
+  data.goals.push({ subject:selectedSubject, lectures:modalLectures, hwTypes:{...modalHwTypes}, subgoals:[], done:false, expanded:false });
+  closeModals(); save();
+}
+
+// Модалка: долг
+let debtType = null, debtPriority = 'high', debtSubject = null;
+function openDebtModal() {
+  debtType=null; debtPriority='high'; debtSubject=null;
+  ['dDesc','dDeadline','dLecture'].forEach(id=>document.getElementById(id).value='');
+  document.querySelectorAll('#debtTypePicker .hw-tog').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('#debtPriorityPicker .hw-tog').forEach((b,i)=>b.classList.toggle('on',i===0));
+  document.getElementById('debtSubjPicker').innerHTML = SUBJECTS.map(s=>
+    `<button class="subj-btn" onclick="pickDebtSubj(this,'${s}')">${s}</button>`).join('');
+  document.getElementById('debtModal').classList.add('open');
+}
+function pickDebtType(btn, type) {
+  document.querySelectorAll('#debtTypePicker .hw-tog').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); debtType=type;
+}
+function pickDebtPriority(btn, p) {
+  document.querySelectorAll('#debtPriorityPicker .hw-tog').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on'); debtPriority=p;
+}
+function pickDebtSubj(btn, name) {
+  document.querySelectorAll('#debtSubjPicker .subj-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel'); debtSubject=name;
+}
+function saveDebt() {
+  const desc=document.getElementById('dDesc').value.trim();
+  if(!debtSubject||!desc)return;
+  data.debts.push({
+    subject:debtSubject, type:debtType, priority:debtPriority,
+    lecture:document.getElementById('dLecture').value.trim(),
+    desc, deadline:document.getElementById('dDeadline').value, done:false
+  });
+  closeModals(); save();
+}
+
+// Модалка: дуэль
+function openDuelModal() {
+  ['duSubject','duOpponent','duTask','duDeadline'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('duResult').value='pending';
+  document.getElementById('duelModal').classList.add('open');
+}
+function saveDuel() {
+  const s=document.getElementById('duSubject').value.trim(), o=document.getElementById('duOpponent').value.trim();
+  if(!s||!o)return;
+  data.duels.push({subject:s,opponent:o,task:document.getElementById('duTask').value.trim(),deadline:document.getElementById('duDeadline').value,result:document.getElementById('duResult').value});
+  closeModals(); save();
+}
+
+function closeModals() { document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open')); }
+document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)closeModals();}));
+
+// Баллы
+function updateScore() {
+  const cur = parseInt(document.getElementById('scoreCurrentInput').value) || 0;
+  const goal = parseInt(document.getElementById('scoreGoalInput').value) || 0;
+  data.scoreCurrent = cur; data.scoreGoal = goal;
+  localStorage.setItem('grimoire_planner2', JSON.stringify(data));
+  const pct = goal > 0 ? Math.min(100, Math.round(cur/goal*100)) : 0;
+  const bar = document.getElementById('scoreBar');
+  bar.style.width = pct+'%';
+  bar.style.background = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--gold)' : 'var(--red)';
+  document.getElementById('scorePct').textContent = goal > 0 ? pct+'%' : '';
+  const left = goal - cur;
+  let lbl = '';
+  if (!goal) lbl = 'введи цель и текущий балл';
+  else if (cur >= goal) lbl = 'цель достигнута 🎉';
+  else lbl = `до цели осталось ${left} ${plural(left,'балл','балла','баллов')}`;
+  document.getElementById('scoreLabel').textContent = lbl;
+}
+
+function initScore() {
+  document.getElementById('scoreCurrentInput').value = data.scoreCurrent || '';
+  document.getElementById('scoreGoalInput').value = data.scoreGoal || '';
+  updateScore();
+}
+
+// Архив
+function archiveSemester() {
+  if (!data.goals.length && !data.debts.length && !data.duels.length) { alert('Нечего архивировать — семестр пустой'); return; }
+  if (!confirm(`Завершить ${data.season} ${data.year} и отправить в архив?`)) return;
+  const archives = JSON.parse(localStorage.getItem('grimoire_archive') || '[]');
+  archives.unshift({ season: data.season, year: data.year, goals: data.goals, debts: data.debts, duels: data.duels, archivedAt: new Date().toLocaleDateString('ru-RU') });
+  localStorage.setItem('grimoire_archive', JSON.stringify(archives));
+  data.goals = []; data.debts = []; data.duels = [];
+  save();
+  alert(`${data.season} ${data.year} отправлен в архив!`);
+}
+
+function openArchive() {
+  const archives = JSON.parse(localStorage.getItem('grimoire_archive') || '[]');
+  const el = document.getElementById('archiveList');
+  if (!archives.length) { el.innerHTML = '<div class="empty">архив пуст</div>'; }
+  else {
+    el.innerHTML = archives.map((a) => {
+      const gDone = a.goals.filter(g=>g.done).length;
+      const dDone = a.debts.filter(d=>d.done).length;
+      const wins  = a.duels.filter(d=>d.result==='win').length;
+      return `<div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:1rem 1.2rem;margin-bottom:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:600;color:var(--text)">${a.season} ${a.year}</span>
+          <span style="font-size:11px;color:var(--faint)">${a.archivedAt}</span>
+        </div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--muted)">✦ целей: ${gDone}/${a.goals.length}</span>
+          <span style="font-size:12px;color:var(--muted)">⚠ долгов закрыто: ${dDone}/${a.debts.length}</span>
+          <span style="font-size:12px;color:var(--muted)">⚔ побед: ${wins}/${a.duels.length}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('archiveModal').classList.add('open');
+}
+
+render();
+</script>
+</body>
+</html>
