@@ -3,40 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Демонология — Гримуар</title>
+<title>Артефакторика — Гримуар</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+body {
+  background: #1d182e;
+  color: #e8e2f5;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+}
+
 /*
   ╔══════════════════════════════════════╗
   ║  ЦВЕТА ПРЕДМЕТА — меняй только здесь ║
   ╚══════════════════════════════════════╝
-  --c1  главный цвет (заголовки, акценты)
-  --c2  приглушённый (подзаголовки, счётчики)
-  --c3  фон плашек и карточек (rgba с прозрачностью)
-  --c4  рамки и разделители
 */
 :root {
-  --bg: #1d182e;
-  --c1: #c084fc;
-  --c2: rgba(192,132,252,0.55);
-  --c3: rgba(192,132,252,0.07);
-  --c4: rgba(192,132,252,0.2);
-  --text: #e8e2f5;
-  --muted: rgba(157,146,184,0.6);
-  --faint: rgba(157,146,184,0.25);
-  --surface: rgba(255,255,255,0.025);
-  --border: rgba(255,255,255,0.055);
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 300;
-  min-height: 100vh;
+  --c1: #fcd34d;   /* главный цвет */
+  --c2: rgba(252,211,77,0.55);
+  --c3: rgba(252,211,77,0.07);
+  --c4: rgba(252,211,77,0.2);
 }
 
 /* ── Шапка ── */
@@ -45,162 +35,264 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem 3rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  position: sticky;
+  top: 0;
+  background: rgba(29,24,46,0.95);
+  backdrop-filter: blur(12px);
+  z-index: 100;
 }
-
 .logo { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; color: var(--c1); text-decoration: none; }
+.breadcrumb { font-size: 12px; color: rgba(157,146,184,0.5); display: flex; align-items: center; gap: 8px; }
+.breadcrumb a { color: rgba(157,146,184,0.5); text-decoration: none; transition: color 0.15s; }
+.breadcrumb a:hover { color: #e8e2f5; }
 
-.breadcrumb { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
-.breadcrumb a { color: var(--muted); text-decoration: none; }
-.breadcrumb a:hover { color: var(--text); }
-
-/* ── Hero предмета ── */
+/* ── Hero ── */
 .hero {
-  padding: 3.5rem 3rem 2.5rem;
-  max-width: 900px;
+  max-width: 860px;
   margin: 0 auto;
-  border-bottom: 1px solid var(--border);
+  padding: 3rem 3rem 2.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: end;
 }
 
-.hero-icon { font-size: 48px; margin-bottom: 1.2rem; display: block; }
+.hero-left {}
+
+.hero-icon { font-size: 44px; margin-bottom: 1rem; display: block; }
 
 .hero-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 52px;
+  font-size: 48px;
   font-weight: 300;
   color: var(--c1);
   line-height: 1.1;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
 }
 
 .hero-sub {
   font-family: 'Cormorant Garamond', serif;
   font-style: italic;
-  font-size: 17px;
-  color: var(--muted);
-  margin-bottom: 1.8rem;
+  font-size: 16px;
+  color: rgba(157,146,184,0.55);
+  margin-bottom: 1.5rem;
+  max-width: 480px;
 }
+
+.hero-prof {
+  font-size: 12px;
+  color: rgba(157,146,184,0.4);
+  letter-spacing: 0.05em;
+}
+.hero-prof span { color: rgba(157,146,184,0.65); }
 
 .hero-stats {
   display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.stat {
-  display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 1.2rem;
+  align-items: flex-end;
+  padding-bottom: 0.3rem;
 }
+.stat { text-align: right; }
 .stat-val {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 600;
   color: var(--c1);
   line-height: 1;
 }
-.stat-label { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); }
+.stat-label { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(157,146,184,0.3); }
 
-/* ── Список лекций ── */
-.lectures {
-  max-width: 900px;
+/* ── Контент ── */
+.content {
+  max-width: 860px;
   margin: 0 auto;
-  padding: 2.5rem 3rem 4rem;
+  padding: 2.5rem 3rem 5rem;
 }
 
-.lectures-label {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--faint);
-  margin-bottom: 1.5rem;
+/* ══════════════════════════════════
+   БЛОК (сворачиваемый)
+══════════════════════════════════ */
+.block { margin-bottom: 1rem; }
+
+.block-toggle {
+  width: 100%;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 1rem 1.3rem;
   display: flex;
   align-items: center;
   gap: 12px;
-}
-.lectures-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-/* Карточка лекции */
-.lecture-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.5rem;
-  padding: 1.4rem 0;
-  border-bottom: 1px solid var(--border);
-  text-decoration: none;
+  cursor: pointer;
   transition: all 0.2s;
-  position: relative;
+  text-align: left;
 }
+.block-toggle:hover { background: var(--c3); border-color: var(--c4); }
+.block-toggle.open { border-radius: 10px 10px 0 0; border-color: var(--c4); background: var(--c3); }
 
-.lecture-item:last-child { border-bottom: none; }
+.block-toggle-arrow {
+  font-size: 12px;
+  color: var(--c2);
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.block-toggle.open .block-toggle-arrow { transform: rotate(90deg); }
 
-.lecture-item:hover .lecture-title { color: var(--c1); }
-.lecture-item:hover .lecture-num { color: var(--c1); }
-
-.lecture-num {
+.block-num {
   font-family: 'Cormorant Garamond', serif;
   font-size: 13px;
-  color: var(--faint);
-  min-width: 28px;
-  padding-top: 4px;
-  transition: color 0.2s;
-  letter-spacing: 0.05em;
-}
-
-.lecture-body { flex: 1; }
-
-.lecture-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.3;
-  margin-bottom: 0.3rem;
-  transition: color 0.2s;
-}
-
-.lecture-desc {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.6;
-  margin-bottom: 0.7rem;
-}
-
-/* Подоглавление лекции */
-.lecture-sub {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.sub-tag {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 20px;
-  border: 1px solid var(--c4);
   color: var(--c2);
-  background: var(--c3);
-  letter-spacing: 0.03em;
-  text-decoration: none;
-  transition: all 0.15s;
-}
-.sub-tag:hover { background: var(--c3); border-color: var(--c1); color: var(--c1); }
-
-.sub-tag.type-main {
-  border-color: rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.03);
-  color: var(--faint);
-}
-
-.lecture-arrow {
-  font-size: 16px;
-  color: var(--c2);
-  opacity: 0;
-  transition: all 0.2s;
-  padding-top: 6px;
+  min-width: 20px;
   flex-shrink: 0;
 }
-.lecture-item:hover .lecture-arrow { opacity: 1; transform: translateX(4px); }
+
+.block-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #e8e2f5;
+  flex: 1;
+  line-height: 1.2;
+}
+
+.block-count {
+  font-size: 11px;
+  color: rgba(157,146,184,0.35);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+/* Содержимое блока */
+.block-body {
+  border: 1px solid var(--c4);
+  border-top: none;
+  border-radius: 0 0 10px 10px;
+  overflow: hidden;
+  display: none;
+}
+.block-body.open { display: block; }
+
+/* ══════════════════════════════════
+   ЭЛЕМЕНТ ВНУТРИ БЛОКА (лекция / контрольная / практика)
+══════════════════════════════════ */
+.entry {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.entry:last-child { border-bottom: none; }
+
+/* Заголовок элемента — кликабельный */
+.entry-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 0.9rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.entry-toggle:hover { background: rgba(255,255,255,0.02); }
+
+/* Тип метка */
+.entry-type {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+  min-width: 80px;
+  text-align: center;
+}
+.type-lecture  { background: var(--c3); color: var(--c1); border: 1px solid var(--c4); }
+.type-control  { background: rgba(252,165,165,0.08); color: rgba(252,165,165,0.7); border: 1px solid rgba(252,165,165,0.2); }
+.type-practice { background: rgba(110,231,183,0.08); color: rgba(110,231,183,0.7); border: 1px solid rgba(110,231,183,0.2); }
+
+.entry-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 13px;
+  color: rgba(157,146,184,0.3);
+  min-width: 24px;
+  flex-shrink: 0;
+}
+
+.entry-title {
+  font-size: 15px;
+  color: #e8e2f5;
+  flex: 1;
+  line-height: 1.4;
+  transition: color 0.15s;
+}
+.entry-toggle:hover .entry-title { color: var(--c1); }
+
+.entry-arrow {
+  font-size: 11px;
+  color: rgba(157,146,184,0.25);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.entry-toggle.open .entry-arrow { transform: rotate(90deg); color: var(--c2); }
+
+/* Подпункты домашек */
+.entry-body {
+  display: none;
+  padding: 0 1.3rem 0.8rem 1.3rem;
+  background: rgba(0,0,0,0.1);
+}
+.entry-body.open { display: block; }
+
+.hw-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0.5rem 0 0.3rem;
+  border-left: 2px solid var(--c4);
+  padding-left: 1rem;
+  margin-left: 2.5rem;
+}
+
+.hw-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.15s;
+  width: fit-content;
+}
+.hw-link:hover { background: var(--c3); }
+
+.hw-link-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.hw-main .hw-link-dot  { background: var(--c1); }
+.hw-extra .hw-link-dot { background: rgba(157,146,184,0.4); }
+
+.hw-link-label {
+  font-size: 13px;
+  color: rgba(157,146,184,0.6);
+  transition: color 0.15s;
+}
+.hw-link:hover .hw-link-label { color: var(--c1); }
+
+.hw-link-status {
+  font-size: 10px;
+  padding: 1px 7px;
+  border-radius: 20px;
+  letter-spacing: 0.05em;
+}
+.status-done { background: rgba(110,231,183,0.1); color: rgba(110,231,183,0.6); border: 1px solid rgba(110,231,183,0.2); }
+.status-todo { background: rgba(157,146,184,0.07); color: rgba(157,146,184,0.35); border: 1px solid rgba(157,146,184,0.12); }
 </style>
 </head>
 <body>
@@ -210,101 +302,232 @@ body {
   <div class="breadcrumb">
     <a href="subjects.html">Предметы</a>
     <span>›</span>
-    <span>Демонология</span>
+    <span>Артефакторика</span>
   </div>
 </div>
 
 <div class="hero">
-  <span class="hero-icon">👁</span>
-  <h1 class="hero-title">Демонология</h1>
-  <p class="hero-sub">изучение природы, классификации и поведения демонических сущностей</p>
+  <div class="hero-left">
+    <span class="hero-icon">⚗️</span>
+    <h1 class="hero-title">Артефакторика</h1>
+    <p class="hero-sub">создание, изучение и классификация магических артефактов и зачарованных предметов</p>
+    <div class="hero-prof">Преподаватель — <span>проф. Adeline Delhi-Schafer</span></div>
+  </div>
   <div class="hero-stats">
-    <div class="stat">
-      <span class="stat-val">12</span>
-      <span class="stat-label">Лекций</span>
-    </div>
-    <div class="stat">
-      <span class="stat-val">8</span>
-      <span class="stat-label">Выполнено</span>
-    </div>
-    <div class="stat">
-      <span class="stat-val">34</span>
-      <span class="stat-label">Заданий</span>
-    </div>
+    <div class="stat"><div class="stat-val">2</div><div class="stat-label">Блока</div></div>
+    <div class="stat"><div class="stat-val">8</div><div class="stat-label">Лекций</div></div>
+    <div class="stat"><div class="stat-val">5</div><div class="stat-label">Выполнено</div></div>
   </div>
 </div>
 
-<div class="lectures">
-  <div class="lectures-label">Оглавление лекций</div>
+<div class="content">
 
-  <a href="lecture.html" class="lecture-item">
-    <span class="lecture-num">01</span>
-    <div class="lecture-body">
-      <div class="lecture-title">Введение в демонологию. Исторический обзор</div>
-      <div class="lecture-desc">Происхождение дисциплины, ключевые источники, классификация по эпохам</div>
-      <div class="lecture-sub">
-        <span class="sub-tag type-main">📌 Основные задания</span>
-        <span class="sub-tag">✦ Доп. задания</span>
-        <span class="sub-tag">📖 Эссе</span>
-      </div>
-    </div>
-    <span class="lecture-arrow">→</span>
-  </a>
+  <!-- ══ БЛОК 1 ══ -->
+  <div class="block">
+    <button class="block-toggle open" onclick="toggleBlock(this)">
+      <span class="block-num">I</span>
+      <span class="block-name">Основной курс</span>
+      <span class="block-count">6 занятий</span>
+      <span class="block-toggle-arrow">›</span>
+    </button>
+    <div class="block-body open">
 
-  <a href="lecture.html" class="lecture-item">
-    <span class="lecture-num">02</span>
-    <div class="lecture-body">
-      <div class="lecture-title">Классификация демонов. Иерархия тёмного мира</div>
-      <div class="lecture-desc">Основные таксономические системы, сравнительный анализ западной и восточной традиций</div>
-      <div class="lecture-sub">
-        <span class="sub-tag type-main">📌 Основные задания</span>
-        <span class="sub-tag">✦ Доп. задания</span>
+      <!-- Лекция 1 -->
+      <div class="entry">
+        <button class="entry-toggle" onclick="toggleEntry(this)">
+          <span class="entry-type type-lecture">Лекция</span>
+          <span class="entry-num">01</span>
+          <span class="entry-title">Введение в артефакторику. История дисциплины</span>
+          <span class="entry-arrow">›</span>
+        </button>
+        <div class="entry-body">
+          <div class="hw-links">
+            <a href="#" class="hw-link hw-main">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Основные задания</span>
+              <span class="hw-link-status status-done">выполнено</span>
+            </a>
+            <a href="#" class="hw-link hw-extra">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Дополнительные задания</span>
+              <span class="hw-link-status status-todo">не начато</span>
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
-    <span class="lecture-arrow">→</span>
-  </a>
 
-  <a href="lecture.html" class="lecture-item">
-    <span class="lecture-num">03</span>
-    <div class="lecture-body">
-      <div class="lecture-title">Призыв и защита. Пентаграммы и барьеры</div>
-      <div class="lecture-desc">Теория магических кругов, материалы для барьеров, техника безопасности</div>
-      <div class="lecture-sub">
-        <span class="sub-tag type-main">📌 Основные задания</span>
-        <span class="sub-tag">✦ Доп. задания</span>
-        <span class="sub-tag">🧪 Практикум</span>
+      <!-- Лекция 2 -->
+      <div class="entry">
+        <button class="entry-toggle" onclick="toggleEntry(this)">
+          <span class="entry-type type-lecture">Лекция</span>
+          <span class="entry-num">02</span>
+          <span class="entry-title">Классификация артефактов. Основные категории</span>
+          <span class="entry-arrow">›</span>
+        </button>
+        <div class="entry-body">
+          <div class="hw-links">
+            <a href="#" class="hw-link hw-main">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Основные задания</span>
+              <span class="hw-link-status status-done">выполнено</span>
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
-    <span class="lecture-arrow">→</span>
-  </a>
 
-  <a href="lecture.html" class="lecture-item">
-    <span class="lecture-num">04</span>
-    <div class="lecture-body">
-      <div class="lecture-title">Демонические договоры. Правовые аспекты</div>
-      <div class="lecture-desc">Структура договора, типичные ловушки, история прецедентов</div>
-      <div class="lecture-sub">
-        <span class="sub-tag type-main">📌 Основные задания</span>
+      <!-- Лекция 3 -->
+      <div class="entry">
+        <button class="entry-toggle" onclick="toggleEntry(this)">
+          <span class="entry-type type-lecture">Лекция</span>
+          <span class="entry-num">03</span>
+          <span class="entry-title">Материалы и компоненты. Проводники магии</span>
+          <span class="entry-arrow">›</span>
+        </button>
+        <div class="entry-body">
+          <div class="hw-links">
+            <a href="#" class="hw-link hw-main">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Основные задания</span>
+              <span class="hw-link-status status-todo">не начато</span>
+            </a>
+            <a href="#" class="hw-link hw-extra">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Дополнительные задания</span>
+              <span class="hw-link-status status-todo">не начато</span>
+            </a>
+          </div>
+        </div>
       </div>
-    </div>
-    <span class="lecture-arrow">→</span>
-  </a>
 
-  <a href="lecture.html" class="lecture-item">
-    <span class="lecture-num">05</span>
-    <div class="lecture-body">
-      <div class="lecture-title">Распознавание одержимости. Симптоматика</div>
-      <div class="lecture-desc">Клиническая картина, дифференциальная диагностика, первичная помощь</div>
-      <div class="lecture-sub">
-        <span class="sub-tag type-main">📌 Основные задания</span>
-        <span class="sub-tag">✦ Доп. задания</span>
-        <span class="sub-tag">📖 Эссе</span>
+      <!-- Контрольная -->
+      <div class="entry">
+        <button class="entry-toggle" onclick="toggleEntry(this)">
+          <span class="entry-type type-control">Контрольная</span>
+          <span class="entry-num">—</span>
+          <span class="entry-title">Контрольная работа №1. Основы классификации</span>
+          <span class="entry-arrow">›</span>
+        </button>
+        <div class="entry-body">
+          <div class="hw-links">
+            <a href="#" class="hw-link hw-main">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Работа</span>
+              <span class="hw-link-status status-done">выполнено</span>
+            </a>
+          </div>
+        </div>
       </div>
+
+      <!-- Лекция 4 -->
+      <div class="entry">
+        <button class="entry-toggle" onclick="toggleEntry(this)">
+          <span class="entry-type type-lecture">Лекция</span>
+          <span class="entry-num">04</span>
+          <span class="entry-title">Зачарование предметов. Базовые техники</span>
+          <span class="entry-arrow">›</span>
+        </button>
+        <div class="entry-body">
+          <div class="hw-links">
+            <a href="#" class="hw-link hw-main">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Основные задания</span>
+              <span class="hw-link-status status-todo">не начато</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Практическая -->
+      <div class="entry">
+        <button class="entry-toggle" onclick="toggleEntry(this)">
+          <span class="entry-type type-practice">Практика</span>
+          <span class="entry-num">—</span>
+          <span class="entry-title">Практическая работа. Создание простого артефакта</span>
+          <span class="entry-arrow">›</span>
+        </button>
+        <div class="entry-body">
+          <div class="hw-links">
+            <a href="#" class="hw-link hw-main">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Работа</span>
+              <span class="hw-link-status status-todo">не начато</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
     </div>
-    <span class="lecture-arrow">→</span>
-  </a>
+  </div>
+
+  <!-- ══ БЛОК 2 ══ -->
+  <div class="block">
+    <button class="block-toggle" onclick="toggleBlock(this)">
+      <span class="block-num">II</span>
+      <span class="block-name">Мракоборческие артефакты и магические предметы</span>
+      <span class="block-count">2 лекции</span>
+      <span class="block-toggle-arrow">›</span>
+    </button>
+    <div class="block-body">
+
+      <div class="entry">
+        <button class="entry-toggle" onclick="toggleEntry(this)">
+          <span class="entry-type type-lecture">Лекция</span>
+          <span class="entry-num">05</span>
+          <span class="entry-title">Защитные артефакты. Амулеты и обереги</span>
+          <span class="entry-arrow">›</span>
+        </button>
+        <div class="entry-body">
+          <div class="hw-links">
+            <a href="#" class="hw-link hw-main">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Основные задания</span>
+              <span class="hw-link-status status-todo">не начато</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="entry">
+        <button class="entry-toggle" onclick="toggleEntry(this)">
+          <span class="entry-type type-lecture">Лекция</span>
+          <span class="entry-num">06</span>
+          <span class="entry-title">Оружие мракоборцев. История и классификация</span>
+          <span class="entry-arrow">›</span>
+        </button>
+        <div class="entry-body">
+          <div class="hw-links">
+            <a href="#" class="hw-link hw-main">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Основные задания</span>
+              <span class="hw-link-status status-todo">не начато</span>
+            </a>
+            <a href="#" class="hw-link hw-extra">
+              <span class="hw-link-dot"></span>
+              <span class="hw-link-label">Дополнительные задания</span>
+              <span class="hw-link-status status-todo">не начато</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
 </div>
+
+<script>
+function toggleBlock(btn) {
+  btn.classList.toggle('open');
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+function toggleEntry(btn) {
+  btn.classList.toggle('open');
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open');
+}
+</script>
 
 </body>
 </html>
